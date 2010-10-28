@@ -1,0 +1,42 @@
+# This is the "seahorse" fractal.  The image has a large field of view,
+# featuring the top-right big spiral.  The coloring doesn't quite accomodate
+# all of the interior points, but it comes close.
+
+# Note that Ny must be divisible by the number of processors!
+
+
+<fractal>
+# fractal constant
+Cx = -0.4666
+Cy =  0.5599
+
+# geometry
+Lx       = 3.0                # physical size
+center_x = 0.0                # center
+center_y = 0.0
+
+
+<image>
+# image size (pixels)
+Nx       =  480 # 1920
+Ny	 =  300 # 1200			  
+
+# coloring for interior points
+tolerance = 20.0              # what counts as inside? 
+exp       = 4.0               # exponent	       	      
+base      = 0.1               # min color
+
+# coloring for exterior points
+nstripes = 3
+
+s1 = 10.0
+s2 =  5.0
+s3 =  3.0
+
+color_1	  = HotPink # DarkChocolate
+color_2	  = Red # Indigo
+color_3	  = HotPink # MidnightBlue
+
+file      = demj.ppm
+
+<par_end>

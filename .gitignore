@@ -1,0 +1,17 @@
+# Ignore objects and archives
+*.[oa]
+
+# Other source repository archive directories (protects when importing)
+.hg
+.svn
+CVS
+
+# Ignore emacs backups and OSX stuff
+*~
+\#*
+.\#*
+.DS_Store
+
+# Ignore images
+*.png
+*.ppm
