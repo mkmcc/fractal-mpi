@@ -14,8 +14,8 @@ center_y = 0.0
 
 <image>
 # image size (pixels)
-Nx       =  300 # 1920
-Ny	 =  300 # 1200			  
+Nx       =  275 # 1920
+Ny	 =  275 # 1200			  
 
 # coloring for interior points
 tolerance = 20.0              # what counts as inside? 
