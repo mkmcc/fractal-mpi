@@ -1,1 +1,194 @@
-My GitHub Page
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+               "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+lang="en" xml:lang="en">
+<head>
+<title>fractal-mpi</title>
+<meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
+<meta name="generator" content="Org-mode"/>
+<meta name="generated" content="2010-10-28 19:11:17 PDT"/>
+<meta name="author" content="Michael McCourt"/>
+<meta name="description" content=""/>
+<meta name="keywords" content=""/>
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  html { font-family: Times, serif; font-size: 12pt; }
+  .title  { text-align: center; }
+  .todo   { color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #add8e6; font-weight:normal }
+  .target { }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  p.verse { margin-left: 3% }
+  pre {
+	border: 1pt solid #AEBDCC;
+	background-color: #F3F5F7;
+	padding: 5pt;
+	font-family: courier, monospace;
+        font-size: 90%;
+        overflow:auto;
+  }
+  table { border-collapse: collapse; }
+  td, th { vertical-align: top; }
+  dt { font-weight: bold; }
+  div.figure { padding: 0.5em; }
+  div.figure p { text-align: center; }
+  .linenr { font-size:smaller }
+  .code-highlighted {background-color:#ffff00;}
+  .org-info-js_info-navigation { border-style:none; }
+  #org-info-js_console-label { font-size:10px; font-weight:bold;
+                               white-space:nowrap; }
+  .org-info-js_search-highlight {background-color:#ffff00; color:#000000;
+                                 font-weight:bold; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" href="css/screen.css" type="text/css" media="screen, projection" />
+<link rel="stylesheet" href="css/print.css" type="text/css" media="print" />
+<script type="text/javascript">
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+
+<h1 class="title">fractal-mpi</h1>
+
+
+
+<div id="outline-container-1" class="outline-2">
+<h2 id="sec-1">Introduction </h2>
+<div class="outline-text-2" id="text-1">
+
+<p>This program renders Julia sets of the function f(z) = z<sup>2</sup> + c, coloring
+interior points by their proximity to the set and exterior points by their
+divergence rate.
+</p>
+<p>
+The program reads image and fractal parameters from an input file (see the
+examples directory), and any of these can be overriden with a command-line
+argument.
+</p>
+
+</div>
+
+</div>
+
+<div id="outline-container-2" class="outline-2">
+<h2 id="sec-2">Usage </h2>
+<div class="outline-text-2" id="text-2">
+
+<p>If this is your input file
+</p>
+
+
+<pre class="src src-athena"><span class="org-type">&lt;fractal&gt;</span>
+<span class="org-keyword">Cx</span> = <span class="org-constant">-0.8</span>
+<span class="org-keyword">Cy</span> =  <span class="org-constant">0.156</span>
+
+<span class="org-keyword">Lx</span>       = <span class="org-constant">1.1</span>                <span class="org-comment"># physical size</span>
+<span class="org-keyword">center_x</span> = <span class="org-constant">0.55</span>               <span class="org-comment"># center</span>
+<span class="org-keyword">center_y</span> = <span class="org-constant">0.05</span>
+
+<span class="org-type">&lt;image&gt;</span>
+<span class="org-keyword">Nx</span>       =  <span class="org-constant">480</span>
+<span class="org-keyword">Ny</span>       =  <span class="org-constant">300</span>
+
+<span class="org-comment"># coloring for interior points</span>
+<span class="org-keyword">tolerance</span> = <span class="org-constant">50.0</span>              <span class="org-comment"># what counts as inside?</span>
+<span class="org-keyword">exp</span>       = <span class="org-constant">4.0</span>               <span class="org-comment"># exponent</span>
+<span class="org-keyword">base</span>      = <span class="org-constant">0.1</span>               <span class="org-comment"># min color</span>
+
+<span class="org-comment"># coloring for exterior points</span>
+<span class="org-keyword">nstripes</span> = <span class="org-constant">3</span>
+<span class="org-keyword">s1</span> = <span class="org-constant">10.0</span>
+<span class="org-keyword">s2</span> =  <span class="org-constant">5.0</span>
+<span class="org-keyword">s3</span> =  <span class="org-constant">3.0</span>
+<span class="org-keyword">color_1</span>   = <span class="org-string">DarkChocolate</span>
+<span class="org-keyword">color_2</span>   = <span class="org-string">Red </span><span class="org-comment"># Indigo</span>
+<span class="org-keyword">color_3</span>   = <span class="org-string">MidnightBlue</span>
+
+<span class="org-comment"># output file</span>
+<span class="org-keyword">file</span>      = <span class="org-string">demj</span>.ppm
+
+&lt;par_end&gt;
+</pre>
+
+
+
+<p>
+You can run the program as
+</p>
+
+
+<pre class="example">./fractal_mpi.x -i input.frac
+</pre>
+
+
+<p>
+or, if you want to override certain options
+</p>
+
+
+<pre class="example">./fractal_mpi.x -i input.frac fractal/Lx=2 image/tolerance=100
+</pre>
+
+
+
+
+</div>
+
+</div>
+
+<div id="outline-container-3" class="outline-2">
+<h2 id="sec-3">Examples </h2>
+<div class="outline-text-2" id="text-3">
+
+<p><img src="example.png" alt="julia 1" title="Julia Set" width="275" class="pad top left" />
+<img src="example2.png" alt="julia 2" title="Julia Set" width="275" class="pad top" />
+<img src="example3.png" alt="julia 3" title="Julia Set" width="275" class="pad bottom left" />
+</p>
+</div>
+</div>
+<div id="postamble">
+<p class="author"> Author: Michael McCourt
+</p>
+<p class="date"> Date: 2010-10-28 19:11:17 PDT</p>
+<p class="creator">HTML generated by org-mode 6.36 in emacs 23</p>
+<p class="xhtml-validation">
+     <a href="http://validator.w3.org/check?uri=referer">
+       <img src="http://w3.org/Icons/valid-xhtml10"
+            alt="Valid XHTML 1.0 Strict" height="31" width="88" />
+     </a>
+   </p>
+   <p class="css-validation">
+     <a href="http://jigsaw.w3.org/css-validator/check?uri=referer">
+       <img style="border:0; width:88px; height:31px"
+            src="http://jigsaw.w3.org/css-validator/images/vcss-blue"
+            alt="Valid CSS" />
+     </a>
+   </p>
+</div>
+</div>
+</body>
+</html>
