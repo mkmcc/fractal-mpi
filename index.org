@@ -1,9 +1,9 @@
-fractal-mpi: parallelized renderer for the Julia set.
+#+TITLE: fractal-mpi
 
-This program renders Julia sets of the function f(z) = z^2 + c, coloring
-interior points by their proximity to the set and exterior points by their
-divergence rate.
+#+STYLE: <link rel="stylesheet" href="css/screen.css" type="text/css" media="screen, projection" />
+#+STYLE: <link rel="stylesheet" href="css/print.css" type="text/css" media="print" />
 
+* Introduction
 This program renders Julia sets of the function f(z) = z^2 + c, coloring
 interior points by their proximity to the set and exterior points by their
 divergence rate.
@@ -12,6 +12,8 @@ The program reads image and fractal parameters from an input file (see the
 examples directory), and any of these can be overriden with a command-line
 argument.
 
+
+* Usage
 If this is your input file
 #+BEGIN_SRC athena
 <fractal>
@@ -54,3 +56,13 @@ or, if you want to override certain options
 #+BEGIN_EXAMPLE
 ./fractal_mpi.x -i input.frac fractal/Lx=2 image/tolerance=100
 #+END_EXAMPLE
+
+
+* Examples
+  #+ATTR_HTML: alt="julia 1" title="Julia Set" width="275" class="pad top left"
+  [[file:example.png]]
+  #+ATTR_HTML: alt="julia 2" title="Julia Set" width="275" class="pad top"
+  [[file:example2.png]]
+  #+ATTR_HTML: alt="julia 3" title="Julia Set" width="275" class="pad bottom left"
+  [[file:example3.png]]
+
