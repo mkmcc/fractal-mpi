@@ -15,4 +15,4 @@ CVS
 # Ignore images
 *.png
 *.ppm
-!example.png
+!example*.png
