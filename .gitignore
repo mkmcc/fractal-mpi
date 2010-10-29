@@ -11,6 +11,7 @@ CVS
 \#*
 .\#*
 .DS_Store
+._*
 
 # Ignore images
 *.png
