@@ -1,6 +1,6 @@
 /*============================================================================*
  * fractal.c
- * Time-stamp: <2010-10-28 15:15:52 (mkmcc)>
+ * Time-stamp: <2011-01-06 19:11:00 (mkmcc)>
  *
  * Draws Julia set for F = z^2 + c using DEM/J algorithm.
  *
@@ -53,6 +53,11 @@
  *
  *   4. I should rethink the antialiasing.
  *
+ *   5. I have a working local contrast enhancement function, which is
+ *      a nice feature to have.  This relies on Gaussian smoothing,
+ *      however, so it doesn't work at the edges.  I therefore need to
+ *      merge the arrays before calling this function.
+ *
  * Begun by Mike McCourt Aug. 2010
  *
  * Parts of this code came from the Wikipedia entry:
@@ -79,9 +84,11 @@
 /* Macro definitions to for efficiency.
  * -------------------------------------------------------------------------- */
 #define one_log2 1.44269504088896
+#define PI 3.14159
 
 #define MAX(x, y) (x > y) ? x : y
 #define MIN(x, y) (x < y) ? x : y
+#define SQR(x) ((x)*(x))
 
 
 /* Data structures
@@ -118,12 +125,16 @@ static double **color;
 static int nstripes;
 static double expo, *s, base, tol;
 
+static int nsubsample;
+static int nsmooth;
+
 static char *filename;
 
 
 /* Other
  * -------------------------------------------------------------------------- */
 static void process_input(char *athinput, int argc, char *argv[]);
+static void local_contrast(FractalPointS ***data);
 static void rasterize(FractalPointS ***data, char *image);
 
 
@@ -139,6 +150,7 @@ static double sync_max (double my_var);
 
 
 /* Main function
+ *   Runs the show
  * -------------------------------------------------------------------------- */
 int main (int argc, char *argv[])
 {
@@ -187,6 +199,11 @@ int main (int argc, char *argv[])
 					     sizeof(FractalPointS));
   for (i=0; i<nstripes; i++)
     render(s[i], array[i]);
+
+
+  /* local contrast enhancement: seems like a good idea, but not that
+       effective in practice? */
+  /* local_contrast(array); */ 
 
 
   /* rasterize to 24-bit colors.
@@ -292,6 +309,15 @@ static void process_input(char *athinput, int argc, char *argv[])
   /* exterior points */
   nstripes = par_geti("image", "nstripes");
 
+  /* processing */
+  nsubsample = par_geti_def("image", "supersampling", 3);
+  nsmooth    = par_geti_def("image", "smoothing", 51);
+
+  if (nsubsample % 2 == 0)	/* ensure odd */
+    nsubsample += 1;
+  if (nsmooth % 2 == 0)
+    nsmooth += 1;
+
   s = (double*) calloc_1d_array(nstripes, sizeof(double));
   for (i=0; i<nstripes; i++) {
     sprintf(label, "s%d", i+1);
@@ -330,14 +356,17 @@ static void process_input(char *athinput, int argc, char *argv[])
 
 
 /* Rendering function
+ *   Loops over pixels in the image and determines whether the
+ *   corresponding point is in the fractal.  If so, color by the
+ *   distance; if not, color with field lines.
  * -------------------------------------------------------------------------- */
 static void render(int s, FractalPointS **sample_data)
 {
   /* coordinates */
   int i, j, ip, jp, iter, c, k;
 
-  double dx = (xmax-xmin)/Nx, dxp = dx/3;
-  double dy = (ymax-ymin)/Ny, dyp = dy/3;
+  double dx = (xmax-xmin)/Nx, dxp = dx/nsubsample;
+  double dy = (ymax-ymin)/Ny, dyp = dy/nsubsample;
 
   double log_M = log(M);
 
@@ -354,19 +383,19 @@ static void render(int s, FractalPointS **sample_data)
 
   int nOut, nIn;
 
+  /* Loop over pixels in the image */
   for (j=0; j<Ny; j++) {
     for (i=0; i<Nx; i++) {
-
       sample_data[j][i].inside = sample_data[j][i].outside = 0.0;
       nOut = nIn = 0;
 
-      for (jp=-1; jp<=1; jp++) {
-	for (ip=-1; ip<=1; ip++) {
+      /* Loop over nsubsample^2 points in the pixel (supersampling) */
+      for (jp=-nsubsample/2; jp<=nsubsample/2; jp++) {
+	for (ip=-nsubsample/2; ip<=nsubsample/2; ip++) {
 
 	  /* initialize the orbit and iterate */
 	  Z[0][1] = ymax - j*dy + jp*dyp;
 	  Z[0][0] = xmin + i*dx + ip*dxp;
-
 	  dist = jdist(Z, &iter);
 
 
@@ -402,11 +431,12 @@ static void render(int s, FractalPointS **sample_data)
 
 	}
       }
-      sample_data[j][i].outside /= 9.0;
-      sample_data[j][i].inside /= 9.0;
+      sample_data[j][i].outside /= SQR(nsubsample);
+      sample_data[j][i].inside  /= SQR(nsubsample);
 
 
-      if (nOut > nIn)
+      /* NB: should be very forgiving toward points in the set */
+      if (nOut == SQR(nsubsample)) /* (nOut > nIn) */ 
 	sample_data[j][i].inside = -1.0;
       else
 	sample_data[j][i].outside = -1.0;
@@ -452,13 +482,81 @@ static void render(int s, FractalPointS **sample_data)
 
 
 
+/* Local Contrast Enhancement:
+ *   Subtracts off a smoothed version of the image to increase the
+ *   effective dynamic range
+ * -------------------------------------------------------------------------- */
+static void local_contrast(FractalPointS ***data)
+{
+  int i, j, ip, jp, npts;
+  double **weights, smooth, sigma2;
+
+  /* Create a Gaussian array of weights */
+  weights = (double**) calloc_2d_array(nsmooth, nsmooth, sizeof(double));
+  sigma2 = nsmooth/5;
+  for (j=0; j<nsmooth; j++)
+    for (i=0; i<nsmooth; i++)
+      weights[j][i] = exp(-0.01*(SQR(i-nsmooth/2) + SQR(j-nsmooth/2)));
+
+
+  /* Loop over points in the set */
+  for (j=nsmooth/2; j<Ny-nsmooth/2; j++) {
+    for (i=nsmooth/2; i<Nx-nsmooth/2; i++) {
+      if (data[0][j][i].outside < 0) {
+
+	/* Subtract off a smoothed version of data[0][j][i] */
+	smooth = 0.0;
+	npts = 0;
+	for (jp=0; jp<nsmooth; jp++) {
+	  for (ip=0; ip<nsmooth; ip++) {
+	    if (data[0][j][i].outside < 0) {
+	      npts++;
+	      smooth += weights[jp][ip] 
+		        * data[0][j-jp+nsmooth/2][i-ip+nsmooth/2].inside;
+	    }
+	  }
+	}
+	smooth /= (npts+1);
+	data[0][j][i].inside -= 0.75 * smooth;
+      }
+    }
+  }
+
+
+  /* shift back origin */
+  double max = -1.0, min = 1e20;
+  for (j=nsmooth/2; j<Ny-nsmooth/2; j++)
+    for (i=nsmooth/2; i<Nx-nsmooth/2; i++)
+      if (data[0][j][i].outside < 0)
+	min = MIN(min, data[0][j][i].inside);
+
+  for (j=nsmooth/2; j<Ny-nsmooth/2; j++)
+    for (i=nsmooth/2; i<Nx-nsmooth/2; i++)
+      data[0][j][i].inside += min;
+
+
+  /* normalize to the maximum */
+  for (j=nsmooth/2; j<Ny-nsmooth/2; j++)
+    for (i=nsmooth/2; i<Nx-nsmooth/2; i++)
+      max = MAX(max, data[0][j][i].inside);
+
+  for (j=nsmooth/2; j<Ny-nsmooth/2; j++)
+    for (i=nsmooth/2; i<Nx-nsmooth/2; i++)
+      data[0][j][i].inside /= max;
+
+  return;
+}
+/* End local contrast enhancement
+ * -------------------------------------------------------------------------- */
+
+
+
 /* Rasterize values to 24-bit color
  * -------------------------------------------------------------------------- */
 static void rasterize(FractalPointS ***data, char *image)
 {
   int i, j, c;
   double **hsv_color, temp[3];
-
   double num, denom;
 
   /* Convert the rgb colors to hsv */
@@ -467,7 +565,7 @@ static void rasterize(FractalPointS ***data, char *image)
     rgb_to_hsv(color[i], hsv_color[i]);
 
 
-  /* Loop over pixels */
+  /* loop over pixels */
   for (j=0; j<Ny; j++) {
     for (i=0; i<Nx; i++) {
 

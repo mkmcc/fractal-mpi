@@ -33,6 +33,6 @@ color_1	  = DarkChocolate
 color_2	  = Red # Indigo
 color_3	  = MidnightBlue
 
-file      = demj.ppm
+file      = input-10.ppm
 
 <par_end>

@@ -18,8 +18,8 @@ center_y = -0.25
 
 <image>
 # image size (pixels)
-Nx       =  1920
-Ny	 =  1200			  
+Nx       =  480
+Ny	 =  300			  
 
 # coloring for interior points
 tolerance = 20.0              # what counts as inside? 
@@ -37,6 +37,6 @@ color_1	  = HotPink # DarkChocolate
 color_2	  = Red # Indigo
 color_3	  = HotPink # MidnightBlue
 
-file      = demj.ppm
+file      = input-17.ppm
 
 <par_end>

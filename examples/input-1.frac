@@ -6,22 +6,32 @@
 Cx = -0.74543
 Cy =  0.11301
 
-# coloring for exterior points
-s1 = 10.0
-s2 =  5.0
-s3 =  3.0
-
-<image>
-# geometry
-Nx       = 400                 # number of pixels 
-Ny       = 400		       	  
 Lx       = 0.75                # physical size
 center_x = 0.82                # center
 center_y = 0.05
+
+
+<image>
+# image size (pixels)
+Nx       = 400
+Ny       = 400		       	  
 
 # coloring for interior points
 tolerance = 50.0              # what counts as inside? 
 exp       = 5.0               # exponent	       	      
 base      = 0.1               # min color	       	     
+
+# coloring for exterior points
+nstripes = 3
+
+s1 = 10.0
+s2 =  5.0
+s3 =  3.0
+
+color_1	  = DarkChocolate
+color_2	  = Red # Indigo
+color_3	  = MidnightBlue
+
+file      = input-1.ppm
 
 <par_end>
